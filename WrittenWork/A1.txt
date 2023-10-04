@@ -200,6 +200,16 @@ State Space size is M*N for very possible box postion in the maze.
 
 2)Provide two heuristics which are admissible.
 
-A) 
+Two admissible heuristics for this problem could be:
+
+a) Manhattan Distance Heuristic: 
+It is admissible because it underestimates the true cost to reach the goal, 
+as the insect can only move in four directions (up, down, left, and right)
+The Manhattan distance heuristic is given by: h_manhattan = |x_current - x_target| + |y_current - y_target|
+
+b) Euclidean Distance Heuristic:
+It is admissible because it also underestimates the true cost to reach the goal, 
+as it assumes the insect can move directly towards the target without any obstacles.
+The Euclidean distance heuristic is given by: h_euclidean = sqrt((x_current - x_target)^2 + (y_current - y_target)^2)
 
 
