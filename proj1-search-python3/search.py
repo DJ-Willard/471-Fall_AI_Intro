@@ -87,16 +87,117 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+
+    '''Notes'''
+    #print("Start:", problem.getStartState())
+    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+
+    '''Initialize the stack (now PQ) with the initial state'''
+    stack = util.Stack()
+    start_state = problem.getStartState()
+    #note to self: (state, path)
+    stack.push((start_state, []))
+
+    '''Initialize the explored states'''
+    explored = set()
+
+    while not stack.isEmpty():
+        #note: python trick to define two varibales
+        current_state, path = stack.pop()
+
+        if problem.isGoalState(current_state):
+            #Goal state reached
+            return path
+        if current_state not in explored:
+            explored.add(current_state)
+            successors = problem.getSuccessors(current_state)
+
+            #Python tuple unpacking statement allows you to iterate through the elements of the successors (greek for greeks info and x in y minutes resources)
+            # successor: This variable is used to store the first element of each tuple, which represents the successor state.
+            # action: This variable is used to store the second element of each tuple, which represents the action taken to reach the successor state
+            # _: This variable is used to store the third element of each tuple, which is the cost associated with the action. not used since stack so by convention _
+            for successor, action, _ in successors:
+                if successor not in explored:
+                    stack.push((successor, path + [action]))
+    # Return an empty list if no path is found
+    # Note to Partner (Isabella Cortez): DFS Completed
+    return []
+
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    #Isabella Cortez completed
+    from util import Queue
+
+    q = Queue()
+    start_node = problem.getStartState()
+    visit_node = []
+    fringe_list = []
+    #note to self fringe_list is the path array
+    q.push((start_node, fringe_list))
+
+    while not q.isEmpty():
+        state, actions = q.pop()
+
+        if state not in visit_node:
+            visit_node.append(state)
+
+        if problem.isGoalState(state):
+            return actions
+
+        successors = problem.getSuccessors(state)
+
+        for successor, action, cost in successors:
+            if successor not in visit_node:
+                visit_node.append(successor)
+                new_act = actions + [action]
+                q.push((successor, new_act))
+    return fringe_list
+    #note to self Isabella Cortez completed and sent over.
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+
+    '''Notes'''
+    #print("Start:", problem.getStartState())
+    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+
+    # Initialize the priority queue with the start state and a cost of 0 stolen from my dfs shamelessly
+    pq = util.PriorityQueue()
+    start_state = problem.getStartState()
+    #Note to self (state, path, cost) , priority
+    pq.push((start_state, [], 0), 0)
+
+    # Initialize a set to keep track of explored states
+    explored = set()
+
+    while not pq.isEmpty():
+        #pop doesn't return cost cuzse error remember for future the proritiy is used internal for the made class
+        current_state, path, current_cost = pq.pop()
+
+        if problem.isGoalState(current_state):
+            return path
+
+        if current_state not in explored:
+            explored.add(current_state)
+            successors = problem.getSuccessors(current_state)
+
+            #the good ol' python tuple
+            for successor, action, step_cost in successors:
+                if successor not in explored:
+                    # Calculate the new cost based on the path cost
+                    new_cost =  current_cost + step_cost
+                    # Push the successor state and its path onto the priority queue
+                    pq.push((successor, path + [action], new_cost), new_cost)
+    # Return an empty list if no path is found
+    return []
+    # Note to Partner (Isabella Cortez): UCS Completed
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
@@ -109,6 +210,51 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    #compelted by isabella Cortez she is now working 2,4,5,6 and I am working 1,3,4 rework,7,8
+    # found an error running auto grader working on
+    from util import PriorityQueue
+
+    q = PriorityQueue()
+    empty_list = []
+
+    # initialize fringe list (this is my explored set)
+    fringe_list = []
+
+    # starting node on open
+    start_node = problem.getStartState()
+    first_heuristic = heuristic(start_node, problem)
+    q.push((start_node, empty_list, 0), first_heuristic)
+
+    # while queue is not empty
+    while not q.isEmpty():
+        # pop queue off list
+        state, actions, cost = q.pop()
+
+        # if state is the goal, return actions list
+        if problem.isGoalState(state):
+            return actions
+        # if current position not in list, add it to list
+        if state not in fringe_list:
+            fringe_list.append(state)
+            # get successor node
+            successors = problem.getSuccessors(state)
+
+            # for these values in successor node
+            for successor, action, cost_of_successor in successors:
+                # if successor not in current list
+                if successor not in fringe_list:
+                    # set path equal to
+                    path = list(actions) + [action]
+                    # g value this i believed to be the error g = problem.getCostOfActions(path)
+                    g = cost + cost_of_successor
+                    # h value
+                    h = heuristic(successor, problem)
+                    # was missing f calculation
+                    f = g + h
+                    # push into queue
+                    q.push((successor, path, g), f)
+
+    return empty_list
     util.raiseNotDefined()
 
 
