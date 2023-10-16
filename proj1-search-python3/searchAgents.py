@@ -506,20 +506,21 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
 
-    #Call foodGrid as a list form given notes
+    # Call foodGrid as a list form given notes
     food_list = foodGrid.asList()
 
     if not food_list:
         # If there's no remaining food, Pacman is already at the goal. cost is 0
         return 0
 
-    #this code will provide  3/4 with 9551 node expanded
+    # this code will provide  3/4 with 9551 node expanded
     max_dist = 0
     for food in food_list:
-        dist = util.manhattanDistance(position, food)
+        # dist = util.manhattanDistance(position, food)
+        # using maze distance function to get distance between two points
+        dist = mazeDistance(position, food, problem.startingGameState)
         if dist > max_dist:
             max_dist = dist
-
     return max_dist
 
 class ClosestDotSearchAgent(SearchAgent):
