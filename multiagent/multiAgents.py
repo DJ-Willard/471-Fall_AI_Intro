@@ -86,34 +86,21 @@ class ReflexAgent(Agent):
         6) Games Scores 
         7) Game Food Postions"""
 
-        #Address each state by priority
+        # Calculate the distance to the closest food pellet
+        foodDistances = [util.manhattanDistance(newPos, food) for food in newFood.asList()]
+        closestFoodDistance = min(foodDistances) if foodDistances else 0
 
-        #Ghost position
         # Calculate the distance to the closest ghost
         ghostDistances = [util.manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates]
-        closestGhostDistance = min(ghostDistances)
-        # two is used not one since one causes interaction with killer ghost
-        if closestGhostDistance < 2:
-            return -float('inf')
+        closestGhostDistance = min(ghostDistances) if ghostDistances else 0
 
-
-        # food Count and Positions
-        # NO killer ghost so eat up Pman
-        closestFoodDistance = float('inf')
-        foodCount = currentGameState.getNumFood()
-        nextFoodCount = successorGameState.getNumFood()
-        if nextFoodCount < foodCount:
-            return float('inf')
-        # This pioritise food as the 2nd highest after ghosts
-        # Food in list form from method notes
-        # Calculate the distance to the closest food pellet
-
-
-        foodDistances = [util.manhattanDistance(newPos, food) for food in newFood.asList()]
-        closestFoodDistance = min(foodDistances)
-
-        # we must return the inverse
-        return 1.0 / closestFoodDistance
+        if closestGhostDistance <= 1:
+            # Avoid ghosts at all costs
+            return -float("inf")
+        else:
+            # Calculate the score and prioritize getting closer to food
+            score = successorGameState.getScore()
+            return score + 1.0 / closestFoodDistance - 2.0 / closestGhostDistance
 
 
 
