@@ -74,7 +74,51 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        """PAC man has two states (drugged up and normal), position
+        Ghosts have Two Stats (killer or scared), a timer, and position 
+        Game states is the score, 
+        States we need to track: 
+        1) PACs position 
+        2) PACs drug level 1 or none 
+        3) Ghost position 
+        4) Ghost State Scared or not 
+        5) Ghosts timer
+        6) Games Scores 
+        7) Game Food Postions"""
+
+        #Address each state by priority
+
+        #Ghost position
+        # Calculate the distance to the closest ghost
+        ghostDistances = [util.manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates]
+        closestGhostDistance = min(ghostDistances)
+        # two is used not one since one causes interaction with killer ghost
+        if closestGhostDistance < 2:
+            return -float('inf')
+
+
+        # food Count and Positions
+        # NO killer ghost so eat up Pman
+        closestFoodDistance = float('inf')
+        foodCount = currentGameState.getNumFood()
+        nextFoodCount = successorGameState.getNumFood()
+        if nextFoodCount < foodCount:
+            return float('inf')
+        # This pioritise food as the 2nd highest after ghosts
+        # Food in list form from method notes
+        # Calculate the distance to the closest food pellet
+
+
+        foodDistances = [util.manhattanDistance(newPos, food) for food in newFood.asList()]
+        closestFoodDistance = min(foodDistances)
+
+        # we must return the inverse
+        return 1.0 / closestFoodDistance
+
+
+
+        # given form project
+        # return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
