@@ -254,9 +254,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     else:
                         # Fix the function call
                         value, _ = abPruning(successor, agentIndex + 1, depth, a, b)
-                    # Initialize value to positive infinity for the min layer
-                    if agentIndex != 0:
-                        value = float('inf')
                     bestValue = min(bestValue, value)
                     if bestValue <= alpha:
                         return bestValue, action  # Prune
@@ -265,10 +262,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         beta = bestValue
                         bestAction = action
             return bestValue, bestAction
-        # Initialize value to negative infinity for the max layer
-        bestValue = float('-inf')
         # Fix the function call
-        _, bestAction = abPruning(gameState, agentIndex, self.depth, alpha, beta)
+        _, bestAction = abPruning(gameState, agentIndex, self.depth, alpha, beta) 
         return bestAction
 
     def getAction(self, gameState):
