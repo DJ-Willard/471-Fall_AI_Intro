@@ -233,6 +233,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             bestValue = float('-inf')
             for action in legalActions:
                 successor = gameState.generateSuccessor(agentIndex, action)
+                # Next agent is a min agent
                 value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
                 bestValue = max(bestValue, value)
 
@@ -247,18 +248,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             bestValue = float('inf')
             for action in legalActions:
                 successor = gameState.generateSuccessor(agentIndex, action)
-
                 if agentIndex == gameState.getNumAgents() - 1:
+                    # Switch to the max layer (Pacman)
                     value = self.alphabeta(depth - 1, 0, successor, alpha, beta)
                 else:
+                    # Stay in the min layer (Ghosts)
                     value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
-
                 bestValue = min(bestValue, value)
-
                 # Alpha-beta pruning
                 if bestValue <= alpha:
                     return bestValue
-
                 beta = min(beta, bestValue)
             return bestValue
 
@@ -273,16 +272,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float('-inf')
         beta = float('inf')
         bestValue = float('-inf')
-
         for action in legalActions:
             successor = gameState.generateSuccessor(0, action)
             value = self.alphabeta(self.depth, 1, successor, alpha, beta)
-
             if value > bestValue:
                 bestValue = value
                 bestAction = action
             alpha = max(alpha, bestValue)
-
         return bestAction
         #given at project start
         #util.raiseNotDefined()
