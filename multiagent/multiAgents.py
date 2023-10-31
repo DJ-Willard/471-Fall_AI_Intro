@@ -226,7 +226,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if not gameState.getLegalActions(agent) or depth == 0:
                 return self.evaluationFunction(gameState), None
 
-<<<<<<< HEAD
             legalActions = gameState.getLegalActions(agent)
             bestAction = None
             # Check if it's Pacman's turn (max layer)
@@ -271,38 +270,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # Fix the function call
         _, bestAction = abPruning(gameState, agentIndex, self.depth, alpha, beta)
         return bestAction
-=======
-    def alphabeta(self, depth, agentIndex, gameState, alpha, beta):
-        if gameState.isWin() or gameState.isLose() or depth == 0:
-            return self.evaluationFunction(gameState)
-
-        legalActions = gameState.getLegalActions(agentIndex)
-        # Max layer (Pacman)
-        if agentIndex == 0:
-            bestValue = float('-inf')
-            for action in legalActions:
-                successor = gameState.generateSuccessor(agentIndex, action)
-                value = self.alphabeta(depth - 1, agentIndex + 1, successor, alpha, beta)
-                bestValue = max(bestValue, value)
-                if bestValue >= beta:
-                    return bestValue
-                alpha = max(alpha, bestValue)
-            return bestValue
-        # Min layer (Ghosts)
-        else:
-            bestValue = float('inf')
-            for action in legalActions:
-                successor = gameState.generateSuccessor(agentIndex, action)
-                if agentIndex == gameState.getNumAgents() - 1:
-                    value = self.alphabeta(depth - 1, 0, successor, alpha, beta)
-                else:
-                    value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
-                bestValue = min(bestValue, value)
-                if bestValue <= alpha:
-                    return bestValue
-                beta = min(beta, bestValue)
-            return bestValue
->>>>>>> parent of a1f35a9 (try two)
 
     def getAction(self, gameState):
         """
@@ -315,18 +282,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float('-inf')
         beta = float('inf')
         bestValue = float('-inf')
+
         for action in legalActions:
             successor = gameState.generateSuccessor(0, action)
-<<<<<<< HEAD
             value = self.alphaBeta(self.depth, 1, successor, alpha, beta)
 
-=======
-            value = self.alphabeta(self.depth, 1, successor, alpha, beta)
->>>>>>> parent of a1f35a9 (try two)
             if value > bestValue:
                 bestValue = value
                 bestAction = action
             alpha = max(alpha, bestValue)
+
         return bestAction
         #given at project start
         #util.raiseNotDefined()
