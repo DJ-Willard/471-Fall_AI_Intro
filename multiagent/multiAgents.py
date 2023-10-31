@@ -220,51 +220,47 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
     """
-    def alphaBeta(self, depth, agentIndex, gameState, alpha, beta):
-        def abPruning(gameState, agent, depth, a, b):
-            # Terminate state #
-            if not gameState.getLegalActions(agent) or depth == 0:
-                return self.evaluationFunction(gameState), None
 
-            legalActions = gameState.getLegalActions(agent)
-            bestAction = None
-            # Check if it's Pacman's turn (max layer)
-            if agentIndex == 0:
-                bestValue = float('-inf')
-                for action in legalActions:
-                    successor = gameState.generateSuccessor(agent, action)
-                    # Fix the function call
-                    value, _ = abPruning(successor, agentIndex + 1, depth, a, b)
-                    bestValue = max(bestValue, value)
-                    if bestValue >= beta:
-                        # Prune
-                        return bestValue, action
-                    a = max(a, bestValue)
-                    if bestValue > alpha:
-                        alpha = bestValue
-                        bestAction = action
-            # Min layer (Ghosts)
-            else:
-                bestValue = float('inf')
-                for action in legalActions:
-                    successor = gameState.generateSuccessor(agent, action)
-                    if agent == gameState.getNumAgents() - 1:
-                        # Fix the function call
-                        value, _ = abPruning(successor, 0, depth - 1, a, b)
-                    else:
-                        # Fix the function call
-                        value, _ = abPruning(successor, agentIndex + 1, depth, a, b)
-                    bestValue = min(bestValue, value)
-                    if bestValue <= alpha:
-                        return bestValue, action  # Prune
-                    b = min(b, bestValue)
-                    if bestValue < beta:
-                        beta = bestValue
-                        bestAction = action
-            return bestValue, bestAction
-        # Fix the function call
-        _, bestAction = abPruning(gameState, agentIndex, self.depth, alpha, beta) 
-        return bestAction
+    def alphabeta(self, depth, agentIndex, gameState, alpha, beta):
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            # evaluation function for leaf nodes
+            return self.evaluationFunction(gameState)
+
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        # Check if it's Pacman's turn (max layer)
+        if agentIndex == 0:
+            bestValue = float('-inf')
+            for action in legalActions:
+                successor = gameState.generateSuccessor(agentIndex, action)
+                value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
+                bestValue = max(bestValue, value)
+
+                # Alpha-beta pruning
+                if bestValue >= beta:
+                    return bestValue
+
+                alpha = max(alpha, bestValue)
+            return bestValue
+        # Min layer (Ghosts)
+        else:
+            bestValue = float('inf')
+            for action in legalActions:
+                successor = gameState.generateSuccessor(agentIndex, action)
+
+                if agentIndex == gameState.getNumAgents() - 1:
+                    value = self.alphabeta(depth - 1, 0, successor, alpha, beta)
+                else:
+                    value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
+
+                bestValue = min(bestValue, value)
+
+                # Alpha-beta pruning
+                if bestValue <= alpha:
+                    return bestValue
+
+                beta = min(beta, bestValue)
+            return bestValue
 
     def getAction(self, gameState):
         """
@@ -280,7 +276,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         for action in legalActions:
             successor = gameState.generateSuccessor(0, action)
-            value = self.alphaBeta(self.depth, 1, successor, alpha, beta)
+            value = self.alphabeta(self.depth, 1, successor, alpha, beta)
 
             if value > bestValue:
                 bestValue = value
