@@ -221,12 +221,58 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     Your minimax agent with alpha-beta pruning (question 3)
     """
 
+    def alphabeta(self, depth, agentIndex, gameState, alpha, beta):
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return self.evaluationFunction(gameState)
+
+        legalActions = gameState.getLegalActions(agentIndex)
+        # Max layer (Pacman)
+        if agentIndex == 0:
+            bestValue = float('-inf')
+            for action in legalActions:
+                successor = gameState.generateSuccessor(agentIndex, action)
+                value = self.alphabeta(depth - 1, agentIndex + 1, successor, alpha, beta)
+                bestValue = max(bestValue, value)
+                if bestValue >= beta:
+                    return bestValue
+                alpha = max(alpha, bestValue)
+            return bestValue
+        # Min layer (Ghosts)
+        else:
+            bestValue = float('inf')
+            for action in legalActions:
+                successor = gameState.generateSuccessor(agentIndex, action)
+                if agentIndex == gameState.getNumAgents() - 1:
+                    value = self.alphabeta(depth - 1, 0, successor, alpha, beta)
+                else:
+                    value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
+                bestValue = min(bestValue, value)
+                if bestValue <= alpha:
+                    return bestValue
+                beta = min(beta, bestValue)
+            return bestValue
+
     def getAction(self, gameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        legalActions = gameState.getLegalActions(0)
+        bestAction = None
+        alpha = float('-inf')
+        beta = float('inf')
+        bestValue = float('-inf')
+        for action in legalActions:
+            successor = gameState.generateSuccessor(0, action)
+            value = self.alphabeta(self.depth, 1, successor, alpha, beta)
+            if value > bestValue:
+                bestValue = value
+                bestAction = action
+            alpha = max(alpha, bestValue)
+        return bestAction
+        #given at project start
+        #util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
