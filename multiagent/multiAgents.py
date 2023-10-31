@@ -223,18 +223,23 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def alphabeta(self, depth, agentIndex, gameState, alpha, beta):
         if gameState.isWin() or gameState.isLose() or depth == 0:
+            # evaluation function for leaf nodes
             return self.evaluationFunction(gameState)
 
         legalActions = gameState.getLegalActions(agentIndex)
-        # Max layer (Pacman)
+
+        # Check if it's Pacman's turn (max layer)
         if agentIndex == 0:
             bestValue = float('-inf')
             for action in legalActions:
                 successor = gameState.generateSuccessor(agentIndex, action)
-                value = self.alphabeta(depth - 1, agentIndex + 1, successor, alpha, beta)
+                value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
                 bestValue = max(bestValue, value)
+
+                # Alpha-beta pruning
                 if bestValue >= beta:
                     return bestValue
+
                 alpha = max(alpha, bestValue)
             return bestValue
         # Min layer (Ghosts)
@@ -242,13 +247,18 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             bestValue = float('inf')
             for action in legalActions:
                 successor = gameState.generateSuccessor(agentIndex, action)
+
                 if agentIndex == gameState.getNumAgents() - 1:
                     value = self.alphabeta(depth - 1, 0, successor, alpha, beta)
                 else:
                     value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
+
                 bestValue = min(bestValue, value)
+
+                # Alpha-beta pruning
                 if bestValue <= alpha:
                     return bestValue
+
                 beta = min(beta, bestValue)
             return bestValue
 
@@ -263,13 +273,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float('-inf')
         beta = float('inf')
         bestValue = float('-inf')
+
         for action in legalActions:
             successor = gameState.generateSuccessor(0, action)
             value = self.alphabeta(self.depth, 1, successor, alpha, beta)
+
             if value > bestValue:
                 bestValue = value
                 bestAction = action
             alpha = max(alpha, bestValue)
+
         return bestAction
         #given at project start
         #util.raiseNotDefined()
