@@ -292,6 +292,31 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
+    def expectimax(self, state, depth, agentIndex):
+        if depth == 0 or state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+
+        if agentIndex == 0:  # Pacman's turn (max layer)
+            maxAction = None
+            maxUtility = float('-inf')
+            for action in state.getLegalActions(0):
+                successorState = state.generateSuccessor(0, action)
+                successorUtility = self.expectimax(successorState, depth - 1, 1)
+                if successorUtility > maxUtility:
+                    maxUtility = successorUtility
+                    maxAction = action
+            return maxUtility
+
+        else:  # Ghost's turn (expectation layer)
+            legalActions = state.getLegalActions(agentIndex)
+            expectedUtility = 0
+            numActions = len(legalActions)
+            for action in legalActions:
+                successorState = state.generateSuccessor(agentIndex, action)
+                successorUtility = self.expectimax(successorState, depth, (agentIndex + 1) % state.getNumAgents())
+                expectedUtility += successorUtility / numActions
+            return expectedUtility
+
     def getAction(self, gameState):
         """
         Returns the expectimax action using self.depth and self.evaluationFunction
@@ -299,18 +324,68 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        legalActions = gameState.getLegalActions(0)
+        bestAction = None
+        bestUtility = float('-inf')
+
+        for action in legalActions:
+            successorState = gameState.generateSuccessor(0, action)
+            successorUtility = self.expectimax(successorState, self.depth, 1)
+            if successorUtility > bestUtility:
+                bestUtility = successorUtility
+                bestAction = action
+
+        return bestAction
+        #util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: We want to create a more effective evaluation function that
+    takes into account various factors to help Pacman make better decisions.
+    The factors we consider are:
+    1. Game score: Higher score is better.
+    2. Remaining food: Less remaining food is better.
+    3. Distance to the nearest ghost: Avoid ghosts.
+    4. Distance to the nearest scared ghost: Seek out scared ghosts.
+
+    We assign weights to each factor and combine them to compute the evaluation
+    score for a state.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Extract game state information
+    pacmanPosition = currentGameState.getPacmanPosition()
+    foodGrid = currentGameState.getFood()
+    ghostStates = currentGameState.getGhostStates()
+    scaredTimes = [ghostState.scaredTimer for ghostState in ghostStates]
+
+    # Define weights for the factors
+    scoreWeight = 100  # Weight for game score
+    foodWeight = -1  # Weight for remaining food (negative because we want less remaining)
+    ghostDistanceWeight = -10  # Weight for distance to the nearest ghost (negative because we want to avoid them)
+    scaredGhostDistanceWeight = 5  # Weight for distance to the nearest scared ghost (positive because we want to catch them)
+
+    # Calculate the distance to the nearest ghost
+    nearestGhostDistance = min(
+        manhattanDistance(pacmanPosition, ghostState.getPosition()) for ghostState in ghostStates)
+
+    # Calculate the distance to the nearest scared ghost
+    nearestScaredGhostDistance = min(manhattanDistance(pacmanPosition, ghostState.getPosition())
+                                     for ghostState, scaredTime in zip(ghostStates, scaredTimes) if scaredTime > 0)
+
+    # Calculate the evaluation score
+    evaluationScore = (currentGameState.getScore() * scoreWeight +
+                       foodGrid.count() * foodWeight +
+                       nearestGhostDistance * ghostDistanceWeight +
+                       nearestScaredGhostDistance * scaredGhostDistanceWeight)
+
+    return evaluationScore
+    #given
+    #util.raiseNotDefined()
+
+
 
 # Abbreviation
 better = betterEvaluationFunction
