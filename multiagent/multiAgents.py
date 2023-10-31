@@ -150,7 +150,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
-
+    def minimax(self, depth, agentIndex, gameState):
+        if gameState.isWin() or gameState.isLose() or depth == 0:
+            return self.evaluationFunction(gameState)
+        # Max layer (Pacman)
+        if agentIndex == 0:
+            bestValue = float('-inf')
+            for move in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, move)
+                # Next agent is a min agent
+                value = self.minimax(depth, agentIndex + 1, successor)
+                bestValue = max(bestValue, value)
+            return bestValue
+        # Min layer (Ghosts)
+        else:
+            bestValue = float('inf')
+            for move in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, move)
+                if agentIndex == gameState.getNumAgents() - 1:
+                    # Switch to the max layer (Pacman)
+                    value = self.minimax(depth - 1, 0, successor)
+                else:
+                    # Stay in the min layer (Ghosts)
+                    value = self.minimax(depth, agentIndex + 1, successor)
+                bestValue = min(bestValue, value)
+            return bestValue
 
     def getAction(self, gameState):
         """
@@ -176,34 +200,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        def minimax(depth, agentIndex, gameState):
-            if gameState.isWin() or gameState.isLose() or depth == 0:
-                return self.evaluationFunction(gameState)
-
-            if agentIndex == 0:
-                i = float('-inf')
-                for move in gameState.getLegalActions(agentIndex):
-                    successor = gameState.generateSuccessor(agentIndex, move)
-                    value = minimax(depth - 1, (agentIndex + 1) % gameState.getNumAgents(), successor)
-                    i = max(i, value)
-                return i
-            else:
-                i = float('inf')
-                for move in gameState.getLegalActions(agentIndex):
-                    successor = gameState.generateSuccessor(agentIndex, move)
-                    if agentIndex == gameState.getNumAgents() - 1:
-                        value = minimax(depth - 1, 0, successor)
-                    else:
-                        value = minimax(depth, agentIndex + 1, successor)
-                    i = min(i, value)
-                return i
-
+        # Pacman's actions
         legalActions = gameState.getLegalActions(0)
-        bestAction = None
         bestValue = float('-inf')
+        bestAction = None
         for action in legalActions:
             successor = gameState.generateSuccessor(0, action)
-            value = minimax(self.depth, 1, successor)
+            # Start with min layer (ghosts)
+            value = self.minimax(self.depth, 1, successor)
             if value > bestValue:
                 bestValue = value
                 bestAction = action
