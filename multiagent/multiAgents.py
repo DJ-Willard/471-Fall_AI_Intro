@@ -238,7 +238,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 bestValue = max(bestValue, value)
 
                 # Alpha-beta pruning
-                if bestValue >= beta:
+                if bestValue > beta:
                     return bestValue
 
                 alpha = max(alpha, bestValue)
@@ -256,7 +256,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     value = self.alphabeta(depth, agentIndex + 1, successor, alpha, beta)
                 bestValue = min(bestValue, value)
                 # Alpha-beta pruning
-                if bestValue <= alpha:
+                if bestValue < alpha:
                     return bestValue
                 beta = min(beta, bestValue)
             return bestValue
