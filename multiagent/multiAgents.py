@@ -287,41 +287,35 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(state)
 
         if agentIndex == 0:  # Pacman's turn (max layer)
-            # maxAction = None
+            maxAction = None
             maxUtility = float('-inf')
             legalActions = state.getLegalActions(agentIndex)
+
+            if not legalActions:
+                return None  # No legal actions, return None
+
             for action in legalActions:
                 successorState = state.generateSuccessor(agentIndex, action)
-                successorUtility = self.expectimax(successorState, depth, agentIndex+1)
-                maxUtility = max(maxUtility, successorUtility)
-                # if successorUtility > maxUtility:
-                    # maxUtility = successorUtility
-                    # maxAction = action
+                successorUtility = self.expectimax(successorState, depth, (agentIndex + 1) % state.getNumAgents())
+                if successorUtility is not None and isinstance(successorUtility, (int, float)):
+                    if successorUtility > maxUtility:
+                        maxUtility = successorUtility
+                        maxAction = action
             return maxUtility
 
-        else:  # Ghost's turn (expectation layer)
+        else:  # Ghosts' turn (expectation layer)
             legalActions = state.getLegalActions(agentIndex)
-            # expectedUtility = 0
-            successorUtility = 0
-            numActions = len(legalActions)
+            if not legalActions:
+                return None  # No legal actions, return None
+            expectedUtility = 0
+
             for action in legalActions:
                 successorState = state.generateSuccessor(agentIndex, action)
-                # was depth
-                successorUtility += self.expectimax(successorState, depth-1, (agentIndex + 1) % state.getNumAgents())
-                # (agentIndex + 1) % state.getNumAgents()
-                expectedUtility = successorUtility / numActions
-            return expectedUtility
+                successorUtility = self.expectimax(successorState, depth - 1, (agentIndex + 1) % state.getNumAgents())
+                if successorUtility is not None and isinstance(successorUtility, (int, float)):
+                    expectedUtility += successorUtility
 
-        legalActions = state.getLegalActions(0)
-        maxAction = None
-        maxUtility = float("-inf")
-        for action in legalActions:
-            successorState = state.generateSuccessor(0, action)
-            successorUtility = self.exectimax(successorState, depth, 1)
-            if successorUtility > maxUtility:
-                maxUtility = successorUtility
-                maxAction = action
-            return maxAction
+            return expectedUtility / len(legalActions)
 
     def getAction(self, gameState):
         """
@@ -334,12 +328,16 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         bestAction = None
         bestUtility = float('-inf')
 
+        if not legalActions:
+            return None  # No legal actions, return None
+
         for action in legalActions:
             successorState = gameState.generateSuccessor(0, action)
             successorUtility = self.expectimax(successorState, self.depth, 1)
-            if successorUtility > bestUtility:
-                bestUtility = successorUtility
-                bestAction = action
+            if successorUtility is not None and isinstance(successorUtility, (int, float)):
+                if successorUtility > bestUtility:
+                    bestUtility = successorUtility
+                    bestAction = action
 
         return bestAction
         #util.raiseNotDefined()
