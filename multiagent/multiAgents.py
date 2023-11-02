@@ -280,6 +280,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
+
+      broke up code to make it easier to trouble shoot should have done that sooner.
     """
 
     def expectimax(self, gameState, depth, agentIndex):
@@ -337,9 +339,15 @@ def betterEvaluationFunction(currentGameState):
     - Distance to the nearest ghost
 
     You can fine-tune the coefficients and add more features to improve performance.
+
+    Changes made:
+    1. Prioritized eating food and capsules.
+    2. Penalized for proximity to ghosts.
+    3. Adjusted coefficients to improve Pacman's performance.
     """
     "*** YOUR CODE HERE ***"
-    #attempt one
+
+    #attempt two
     pacmanPos = currentGameState.getPacmanPosition()
     foodGrid = currentGameState.getFood()
     capsuleList = currentGameState.getCapsules()
@@ -353,12 +361,19 @@ def betterEvaluationFunction(currentGameState):
     if currentGameState.isLose():
         return -float('inf')
 
-    # Evaluate the features
+    # Initialize evaluation value
+    evaluation = 0
+
+    # Prioritize score
+    evaluation += 1.5 * currentGameState.getScore()
     score = currentGameState.getScore()
+
     # Get Pacman's position
     pacmanPos = currentGameState.getPacmanPosition()
 
+    # Evaluate the features
     # Calculate the closest distance to food
+    # Prioritize eating food and capsules while penalizing proximity to ghosts
     foodDistances = [manhattanDistance(pacmanPos, food) for food in currentGameState.getFood().asList()]
     closestFoodDistance = min(foodDistances) if foodDistances else 0
 
@@ -366,23 +381,18 @@ def betterEvaluationFunction(currentGameState):
     capsuleDistances = [manhattanDistance(pacmanPos, capsule) for capsule in currentGameState.getCapsules()]
     closestCapsuleDistance = min(capsuleDistances) if capsuleDistances else 0
 
-    # Calculate the number of remaining food pellets
-    foodCount = currentGameState.getFood().count()
 
-    # Calculate the number of remaining capsules
-    capsuleCount = len(currentGameState.getCapsules())
-
-    # Calculate the reciprocal of the sum of distances to all ghosts
-    ghostDistances = [manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in currentGameState.getGhostStates()]
-    sumGhostDistances = sum(ghostDistances)
 
     # Weigh the features using coefficients
     # The evaluation function combines these features
-    evaluation = currentGameState.getScore() - closestFoodDistance - 2 * closestCapsuleDistance - 5 * foodCount - 10 * capsuleCount - 5 / (
-                sumGhostDistances + 1)
+    # Prioritize eating food
+    evaluation += -10 * foodGrid.count()
+    # Prioritize eating capsules
+    evaluation+= -20 * len(capsuleList)
+    # Penalize proximity to ghosts
+    evaluation += -5 * min(manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in ghostStates)
 
     return evaluation
-
     #util.raiseNotDefined()
 
 # Abbreviation
