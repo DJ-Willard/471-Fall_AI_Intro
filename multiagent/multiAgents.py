@@ -326,10 +326,64 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION:Custom evaluation function for Pacman.
+
+    This evaluation function considers various features such as:
+    - Pacman's score
+    - Distance to the nearest food
+    - Distance to the nearest capsule
+    - Remaining food count
+    - Remaining capsule count
+    - Distance to the nearest ghost
+
+    You can fine-tune the coefficients and add more features to improve performance.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    #attempt one
+    pacmanPos = currentGameState.getPacmanPosition()
+    foodGrid = currentGameState.getFood()
+    capsuleList = currentGameState.getCapsules()
+    ghostStates = currentGameState.getGhostStates()
+
+    # If Pacman wins, return a high score
+    if currentGameState.isWin():
+        return float('inf')
+
+    # If Pacman loses, return a low score
+    if currentGameState.isLose():
+        return -float('inf')
+
+    # Evaluate the features
+    score = currentGameState.getScore()
+    # Get Pacman's position
+    pacmanPos = currentGameState.getPacmanPosition()
+
+    # Calculate the closest distance to food
+    foodDistances = [manhattanDistance(pacmanPos, food) for food in currentGameState.getFood().asList()]
+    closestFoodDistance = min(foodDistances) if foodDistances else 0
+
+    # Calculate the closest distance to capsules
+    capsuleDistances = [manhattanDistance(pacmanPos, capsule) for capsule in currentGameState.getCapsules()]
+    closestCapsuleDistance = min(capsuleDistances) if capsuleDistances else 0
+
+    # Calculate the number of remaining food pellets
+    foodCount = currentGameState.getFood().count()
+
+    # Calculate the number of remaining capsules
+    capsuleCount = len(currentGameState.getCapsules())
+
+    # Calculate the reciprocal of the sum of distances to all ghosts
+    ghostDistances = [manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in currentGameState.getGhostStates()]
+    sumGhostDistances = sum(ghostDistances)
+
+    # Weigh the features using coefficients
+    # The evaluation function combines these features
+    evaluation = currentGameState.getScore() - closestFoodDistance - 2 * closestCapsuleDistance - 5 * foodCount - 10 * capsuleCount - 5 / (
+                sumGhostDistances + 1)
+
+    return evaluation
+
+    #util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction
