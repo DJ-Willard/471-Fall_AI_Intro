@@ -286,36 +286,41 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         if depth == 0 or state.isWin() or state.isLose():
             return self.evaluationFunction(state)
 
-        if agentIndex == 0:  # Pacman's turn (max layer)
-            maxAction = None
-            maxUtility = float('-inf')
-            legalActions = state.getLegalActions(agentIndex)
+        if agentIndex == 0:
+            return self.max_value(state, depth)
 
-            if not legalActions:
-                return None  # No legal actions, return None
+        return self.expectation_value(state, depth, agentIndex)
 
-            for action in legalActions:
-                successorState = state.generateSuccessor(agentIndex, action)
-                successorUtility = self.expectimax(successorState, depth, (agentIndex + 1) % state.getNumAgents())
-                if successorUtility is not None and isinstance(successorUtility, (int, float)):
-                    if successorUtility > maxUtility:
-                        maxUtility = successorUtility
-                        maxAction = action
-            return maxUtility
+    def max_value(self, state, depth):
+        maxUtility = float('-inf')
+        legalActions = state.getLegalActions(0)
 
-        else:  # Ghosts' turn (expectation layer)
-            legalActions = state.getLegalActions(agentIndex)
-            if not legalActions:
-                return None  # No legal actions, return None
-            expectedUtility = 0
+        if not legalActions:
+            return self.evaluationFunction(state)  # Return evaluation function value
 
-            for action in legalActions:
-                successorState = state.generateSuccessor(agentIndex, action)
-                successorUtility = self.expectimax(successorState, depth - 1, (agentIndex + 1) % state.getNumAgents())
-                if successorUtility is not None and isinstance(successorUtility, (int, float)):
-                    expectedUtility += successorUtility
+        for action in legalActions:
+            successorState = state.generateSuccessor(0, action)
+            successorUtility = self.expectimax(successorState, depth, 1)
+            if successorUtility is not None and isinstance(successorUtility, (int, float)):
+                maxUtility = max(maxUtility, successorUtility)
+        return maxUtility
 
-            return expectedUtility / len(legalActions)
+    def expectation_value(self, state, depth, agentIndex):
+        legalActions = state.getLegalActions(agentIndex)
+
+        if not legalActions:
+            return self.evaluationFunction(state)  # Return evaluation function value
+
+        expectedUtility = 0
+        numActions = len(legalActions)
+
+        for action in legalActions:
+            successorState = state.generateSuccessor(agentIndex, action)
+            successorUtility = self.expectimax(successorState, depth - 1, (agentIndex + 1) % state.getNumAgents())
+            if successorUtility is not None and isinstance(successorUtility, (int, float)):
+                expectedUtility += successorUtility
+
+        return expectedUtility / numActions
 
     def getAction(self, gameState):
         """
