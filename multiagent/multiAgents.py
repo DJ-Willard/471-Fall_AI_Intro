@@ -282,45 +282,33 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
-    def expectimax(self, state, depth, agentIndex):
-        if depth == 0 or state.isWin() or state.isLose():
-            return self.evaluationFunction(state)
+    def expectimax(self, gameState, depth, agentIndex):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return (None, self.evaluationFunction(gameState))
 
         if agentIndex == 0:
-            return self.max_value(state, depth)
+            return self.max_value(gameState, depth)
+        else:
+            return self.exp_value(gameState, depth, agentIndex)
 
-        return self.expectation_value(state, depth, agentIndex)
+    def max_value(self, gameState, depth):
+        bestAction = (None, float('-inf'))
+        for legalAction in gameState.getLegalActions(0):
+            nextAgent = (1 if depth % gameState.getNumAgents() == 0 else 0)
+            succAction = legalAction if depth != self.depth * gameState.getNumAgents() else None
+            succValue = self.expectimax(gameState.generateSuccessor(0, legalAction), depth - 1, nextAgent)
+            bestAction = max(bestAction, (legalAction, succValue[1]), key=lambda x: x[1])
+        return bestAction
 
-    def max_value(self, state, depth):
-        maxUtility = float('-inf')
-        legalActions = state.getLegalActions(0)
-
-        if not legalActions:
-            return self.evaluationFunction(state)  # Return evaluation function value
-
-        for action in legalActions:
-            successorState = state.generateSuccessor(0, action)
-            successorUtility = self.expectimax(successorState, depth, 1)
-            if successorUtility is not None and isinstance(successorUtility, (int, float)):
-                maxUtility = max(maxUtility, successorUtility)
-        return maxUtility
-
-    def expectation_value(self, state, depth, agentIndex):
-        legalActions = state.getLegalActions(agentIndex)
-
-        if not legalActions:
-            return self.evaluationFunction(state)  # Return evaluation function value
-
-        expectedUtility = 0
-        numActions = len(legalActions)
-
-        for action in legalActions:
-            successorState = state.generateSuccessor(agentIndex, action)
-            successorUtility = self.expectimax(successorState, depth - 1, (agentIndex + 1) % state.getNumAgents())
-            if successorUtility is not None and isinstance(successorUtility, (int, float)):
-                expectedUtility += successorUtility
-
-        return expectedUtility / numActions
+    def exp_value(self, gameState, depth, agentIndex):
+        legalActions = gameState.getLegalActions(agentIndex)
+        averageScore = 0
+        probability = 1.0 / len(legalActions)
+        for legalAction in legalActions:
+            nextAgent = (agentIndex + 1) % gameState.getNumAgents()
+            bestAction = self.expectimax(gameState.generateSuccessor(agentIndex, legalAction), depth - 1, nextAgent)
+            averageScore += bestAction[1] * probability
+        return (None, averageScore)
 
     def getAction(self, gameState):
         """
@@ -329,22 +317,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        legalActions = gameState.getLegalActions(0)
-        bestAction = None
-        bestUtility = float('-inf')
-
-        if not legalActions:
-            return None  # No legal actions, return None
-
-        for action in legalActions:
-            successorState = gameState.generateSuccessor(0, action)
-            successorUtility = self.expectimax(successorState, self.depth, 1)
-            if successorUtility is not None and isinstance(successorUtility, (int, float)):
-                if successorUtility > bestUtility:
-                    bestUtility = successorUtility
-                    bestAction = action
-
-        return bestAction
+        maxDepth = self.depth * gameState.getNumAgents()
+        return self.expectimax(gameState, maxDepth, 0)[0]
         #util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
